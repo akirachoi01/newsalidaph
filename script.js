@@ -133,36 +133,7 @@ const Player = (() => {
 })();
 // --- End of Player Module ---
 
-// --- Custom Dialog Utility (if you still need it) ---
-// This is a minimal example; you might have a more robust one.
-const setupCustomDialog = () => {
-    if (!document.getElementById('customDialog')) {
-        const dialog = document.createElement('div');
-        dialog.id = 'customDialog';
-        Object.assign(dialog.style, {
-            display: 'none', position: 'fixed', top: '50%', left: '50%',
-            transform: 'translate(-50%, -50%)', backgroundColor: '#333',
-            color: '#fff', padding: '20px', borderRadius: '8px',
-            boxShadow: '0 4px 8px rgba(0,0,0,0.5)', zIndex: '10002',
-            maxWidth: '300px', textAlign: 'center'
-        });
-        dialog.innerHTML = '<p id="customDialogMessage"></p><button id="customDialogClose">OK</button>';
-        document.body.appendChild(dialog);
 
-        document.getElementById('customDialogClose').onclick = () => {
-            dialog.style.display = 'none';
-        };
-    }
-};
-
-const showCustomDialog = (message) => {
-    const dialog = document.getElementById('customDialog');
-    const messageElement = document.getElementById('customDialogMessage');
-    if (dialog && messageElement) {
-        messageElement.textContent = message;
-        dialog.style.display = 'block';
-    }
-};
 // --- End Custom Dialog Utility ---
 
 
