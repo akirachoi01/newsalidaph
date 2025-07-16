@@ -1,23 +1,24 @@
-// stream.js - TMDB ID to DASH stream resolver
-export default async function handler(req, res) {
-  const { tmdbId } = req.query;
+import axios from 'axios';
 
-  if (!tmdbId) {
-    return res.status(400).json({ error: 'Missing tmdbId' });
+const TMDB_API_KEY = 'ba3885a53bc2c4f3c4b5bdc1237e69a0'; // Replace with real or use env var
+
+export default async function handler(req, res) {
+  const { id } = req.query;
+
+  if (!id) {
+    return res.status(400).json({ error: 'Missing TMDB id' });
   }
 
   try {
-    // TODO: Replace with your actual logic
-    // Dummy fallback stream for now
-    const fallbackStream = "https://storage.googleapis.com/shaka-demo-assets/angel-one/dash.mpd";
+    const tmdb = await axios.get(
+      `https://api.themoviedb.org/3/movie/${id}?api_key=${TMDB_API_KEY}`
+    );
+    const { title, release_date } = tmdb.data;
 
-    res.status(200).json({
-      streamUrl: fallbackStream,
-      title: "Fallback Stream",
-      tmdbId
-    });
-  } catch (error) {
-    console.error("Stream error:", error);
-    res.status(500).json({ error: 'Failed to fetch stream URL' });
+    const streamUrl = 'https://storage.googleapis.com/shaka-demo-assets/angel-one/dash.mpd';
+    res.json({ tmdbId: id, title, release_date, streamUrl });
+  } catch (e) {
+    console.error('TMDB fetch error:', e.message);
+    res.status(500).json({ error: 'TMDB data fetch failed' });
   }
 }
