@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>TMDB Movie Streamer</title>
+  <script src="https://cdn.jsdelivr.net/npm/shaka-player@4.7.5/dist/shaka-player.compiled.js"></script>
+  <style>
+    body { font-family: Arial; padding: 20px; background: #111; color: #fff; }
+    #videoModal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; z-index: 1000; }
+    video { width: 80vw; height: auto; }
+    button { padding: 10px 20px; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h1>🎬 Stream a Movie by TMDB ID</h1>
+  <input type="text" id="tmdbInput" placeholder="Enter TMDB ID" />
+  <button onclick="playMovie()">Play</button>
+
+  <div id="videoModal">
+    <video id="video" controls autoplay></video>
+    <br />
+    <button onclick="closePlayer()">Close</button>
+  </div>
+
+  <script>
+    const video = document.getElementById("video");
+    const player = new shaka.Player(video);
+
+    async function playMovie() {
+      const tmdbId = document.getElementById("tmdbInput").value.trim();
+      if (!tmdbId) return alert("Please enter a TMDB ID");
+
+      try {
+        const res = await fetch(`/api/stream?id=${tmdbId}`);
+        const data = await res.json();
+
+        if (!data.streamUrl) return alert("No stream found for this ID");
+
+        await player.load(data.streamUrl);
+        document.getElementById("videoModal").style.display = "flex";
+      } catch (e) {
+        alert("Error loading movie");
+        console.error(e);
+      }
+    }
+
+    function closePlayer() {
+      player.unload();
+      document.getElementById("videoModal").style.display = "none";
+    }
+  </script>
+</body>
+</html>
