@@ -395,33 +395,6 @@ const showDefaultCategoryContent = () => {
 // --- End Category Loading and Navigation ---
 
 
-// --- Main Initialization on DOMContentLoaded ---
-document.addEventListener('DOMContentLoaded', () => {
-    // Initialize core modules and utilities
-    Player.init();
-    setupCustomDialog(); // Ensure custom dialog is set up
-
-    // Inject header content
-    const header = document.getElementById('animatedHeader');
-    if (header) {
-      header.innerHTML = `
-        <a href="https://salidaph.online">
-          <img src="https://salidaph.online/assests/salida.png" alt="SalidaPH Logo" width="120" height="50" style="margin-right: 10px;" />
-        </a>
-        <nav class="nav-links">
-          <div class="scrolling-text">
-            <span style="display: inline-block; animation: marquee 10s linear infinite;">
-              📢 SALIDAPH IS NOW ONLINE!
-            </span>
-          </div>
-          <a href="/">Home</a>
-          <a href="https://github.com/akirachoi01">Github</a>
-          <a href="/privacy-policy.html">Privacy</a>
-          <a href="/terms.html">Term</a>
-          <a href="https://file.salidaph.online/SalidaPH.apk">Get APK</a>
-        </nav>
-      `;
-    }
 
     // Setup Search bar event listeners
     const searchInput = document.getElementById('searchInput');
