@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>TMDB Trailer Player with Poster & Autocomplete</title>
+  <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 30px;
+      max-width: 800px;
+      margin: auto;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+    }
+
+    #suggestions {
+      border: 1px solid #ccc;
+      max-height: 200px;
+      overflow-y: auto;
+      background: white;
+      position: absolute;
+      z-index: 1000;
+      width: calc(100% - 20px);
+    }
+
+    #suggestions div {
+      padding: 10px;
+      cursor: pointer;
+    }
+
+    #suggestions div:hover {
+      background: #f0f0f0;
+    }
+
+    #results {
+      margin-top: 20px;
+    }
+
+    #poster {
+      max-height: 300px;
+      margin-bottom: 10px;
+    }
+
+    video {
+      margin-top: 20px;
+      width: 100%;
+      height: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🎬 TMDB Trailer Player</h1>
+  <div style="position: relative;">
+    <input type="text" id="movieInput" placeholder="Search for a movie..." oninput="autocompleteMovie()" />
+    <div id="suggestions"></div>
+  </div>
+
+  <div id="results"></div>
+
+  <video
+    id="trailer-player"
+    class="video-js vjs-default-skin"
+    controls
+    preload="auto"
+    width="640"
+    height="360"
+    data-setup='{}'>
+  </video>
+
+  <!-- Scripts -->
+  <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
+  <script src="https://unpkg.com/videojs-youtube/dist/Youtube.min.js"></script>
+
+  <script>
+    const TMDB_API_KEY = 'ba3885a53bc2c4f3c4b5bdc1237e69a0'; // Replace with your actual TMDB key
+    let debounceTimer;
+    let searchResults = [];
+
+    async function autocompleteMovie() {
+      const query = document.getElementById('movieInput').value;
+      clearTimeout(debounceTimer);
+
+      if (!query) {
+        document.getElementById('suggestions').innerHTML = '';
+        return;
+      }
+
+      debounceTimer = setTimeout(async () => {
+        const url = `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        searchResults = data.results;
+
+        const suggestions = data.results.slice(0, 5).map(movie => `
+          <div onclick="selectMovie(${movie.id})">
+            ${movie.title} (${(movie.release_date || '').slice(0, 4)})
+          </div>
+        `).join('');
+
+        document.getElementById('suggestions').innerHTML = suggestions;
+      }, 300);
+    }
+
+    async function selectMovie(movieId) {
+      document.getElementById('suggestions').innerHTML = '';
+      const movie = searchResults.find(m => m.id === movieId);
+      if (!movie) return;
+
+      document.getElementById('movieInput').value = `${movie.title} (${(movie.release_date || '').slice(0, 4)})`;
+
+      const posterUrl = movie.poster_path
+        ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+        : '';
+
+      const overview = movie.overview || 'No description available.';
+      const html = `
+        ${posterUrl ? `<img id="poster" src="${posterUrl}" alt="Poster for ${movie.title}" />` : ''}
+        <h2>${movie.title} (${(movie.release_date || '').slice(0, 4)})</h2>
+        <p>${overview}</p>
+      `;
+      document.getElementById('results').innerHTML = html;
+
+      // Get video trailer
+      const videoRes = await fetch(`https://api.themoviedb.org/3/movie/${movie.id}/videos?api_key=${TMDB_API_KEY}`);
+      const videoData = await videoRes.json();
+      const trailer = videoData.results.find(v => v.type === 'Trailer' && v.site === 'YouTube');
+
+      if (trailer) {
+        const player = videojs('trailer-player');
+        player.src({
+          type: 'video/youtube',
+          src: `https://www.youtube.com/watch?v=${trailer.key}`
+        });
+        player.play();
+      } else {
+        alert('No trailer found for this movie.');
+      }
+    }
+  </script>
+
+</body>
+</html>
